@@ -26,9 +26,9 @@
         Règle du jeu : <br class="sm:hidden">
         <span class="font-bold text-yellow-700">
             10 Canettes
-            <img src="/cup.svg" alt="Canette" class="inline w-5 h-5 mx-1 relative -top-0.5">
+            <img src="./cup.svg" alt="Canette" class="inline w-5 h-5 mx-1 relative -top-0.5">
             = 1 Burger
-            <img src="/burger.svg" alt="Burger" class="inline w-6 h-6 mx-1 relative -top-0.5">
+            <img src="./burger.svg" alt="Burger" class="inline w-6 h-6 mx-1 relative -top-0.5">
         </span>
     </div>
 
@@ -179,7 +179,7 @@ Thibault - Stephane : 2 canettes
             } else {
                 for (let i = 0; i < burgers; i++) {
                     const burgerIcon = document.createElement('img');
-                    burgerIcon.src = '/burger.svg';
+                    burgerIcon.src = './burger.svg';
                     burgerIcon.alt = 'Burger';
                     burgerIcon.classList.add('w-7', 'h-7', 'text-yellow-600'); 
                     creditorIconsDiv.appendChild(burgerIcon);
@@ -187,7 +187,7 @@ Thibault - Stephane : 2 canettes
 
                 for (let i = 0; i < remainingCans; i++) {
                     const canIcon = document.createElement('img');
-                    canIcon.src = '/cup.svg';
+                    canIcon.src = './cup.svg';
                     canIcon.alt = 'Canette';
                     canIcon.classList.add('w-6', 'h-6', 'text-gray-500'); 
                     creditorIconsDiv.appendChild(canIcon);
