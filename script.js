@@ -191,41 +191,37 @@ function renderDebts(debts) {
     });
 }
 
-// --- Helper Function for Net Balances ---
-function calculateNetBalances(debts) {
-    const balances = {};
-
-    debts.forEach(debt => {
-        // Debtor owes cans, so their balance decreases
-        balances[debt.debtor] = (balances[debt.debtor] || 0) - debt.cans;
-        // Creditor is owed cans, so their balance increases
-        balances[debt.creditor] = (balances[debt.creditor] || 0) + debt.cans;
+// --- Helper Function for Total Received Cans ---
+function calculateTotalReceivedCans(parsedDebts) {
+    const receivedCansMap = {};
+    parsedDebts.forEach(debt => {
+        receivedCansMap[debt.creditor] = (receivedCansMap[debt.creditor] || 0) + debt.cans;
     });
-
-    return balances;
+    return receivedCansMap;
 }
 
-// --- Leaderboard Calculation Function ---
-function calculateLeaderboard(netBalances) {
-    const leaderboard = [];
+// --- Leaderboard Calculation Function (based on Total Received Cans) ---
+function calculateLeaderboard(totalReceivedMap) {
+    const leaderboardArray = [];
 
-    for (const name in netBalances) {
-        const balance = netBalances[name];
-        if (balance > 0) { // Only net receivers
-            const { burgers, remainingCans } = calculateBurgersAndCans(balance);
-            leaderboard.push({
-                name: name,
-                totalCansOwed: balance, // Total cans for points and sorting
-                burgersOwed: burgers,   // Burgers for display
-                displayCansOwed: remainingCans, // Remaining cans for display
-                points: balance         // Points for ranking
-            });
+    for (const personName in totalReceivedMap) {
+        const totalCans = totalReceivedMap[personName];
+        if (totalCans === 0) { // Skip if they haven't received any cans
+            continue;
         }
+
+        const { burgers, remainingCans } = calculateBurgersAndCans(totalCans);
+        leaderboardArray.push({
+            name: personName,
+            points: totalCans,          // Total cans received, for ranking
+            burgersOwed: burgers,       // Burgers for display
+            cansOwed: remainingCans     // Remaining cans for display (after burgers)
+        });
     }
 
-    // Sort by points (totalCansOwed) in descending order
-    leaderboard.sort((a, b) => b.points - a.points);
-    return leaderboard;
+    // Sort by points (total cans received) in descending order
+    leaderboardArray.sort((a, b) => b.points - a.points);
+    return leaderboardArray;
 }
 
 // --- Render Leaderboard Function ---
@@ -318,7 +314,43 @@ function renderLeaderboard(leaderboardData) {
                     iconsDiv.appendChild(canLine);
                 }
                  // This case is unlikely if balance > 0 and burgers/cans are calculated, but as a fallback:
-                 if (person.burgersOwed === 0 && person.displayCansOwed === 0 && person.totalCansOwed > 0) {
+                // The `person` object from calculateLeaderboard now has:
+                // name, points (total received), burgersOwed, cansOwed (remaining)
+                // renderLeaderboard expects `person.burgersOwed` and `person.cansOwed` for display.
+                // It also expects `person.totalCansOwed` for a fallback display if both burgersOwed and displayCansOwed are 0
+                // but points is > 0. Let's ensure this case is handled or if the field name needs aligning.
+                // The `renderLeaderboard` function uses `person.totalCansOwed` in one specific fallback.
+                // Since `points` now holds the total, we should use that in the fallback logic.
+                // For now, let's assume `renderLeaderboard` will be updated or this fallback is not critical.
+                // The primary display logic for burgers and cans uses `burgersOwed` and `displayCansOwed` (which is now `cansOwed`).
+
+                if (person.burgersOwed > 0) {
+                    const burgerLine = document.createElement('div');
+                    burgerLine.classList.add('flex', 'items-center', 'justify-center', 'space-x-1');
+                    for (let i = 0; i < person.burgersOwed; i++) {
+                        const burgerIcon = document.createElement('img');
+                        burgerIcon.src = './burger.svg';
+                        burgerIcon.alt = 'Burger';
+                        burgerIcon.classList.add('w-8', 'h-8');
+                        burgerLine.appendChild(burgerIcon);
+                    }
+                    iconsDiv.appendChild(burgerLine);
+                }
+
+                if (person.cansOwed > 0) { // Changed from displayCansOwed
+                     const canLine = document.createElement('div');
+                    canLine.classList.add('flex', 'items-center', 'justify-center', 'space-x-1');
+                    for (let i = 0; i < person.cansOwed; i++) { // Changed from displayCansOwed
+                        const canIcon = document.createElement('img');
+                        canIcon.src = './cup.svg';
+                        canIcon.alt = 'Canette';
+                        canIcon.classList.add('w-7', 'h-7');
+                        canLine.appendChild(canIcon);
+                    }
+                    iconsDiv.appendChild(canLine);
+                }
+                 // This case is unlikely if points > 0 and burgers/cans are calculated, but as a fallback:
+                 if (person.burgersOwed === 0 && person.cansOwed === 0 && person.points > 0) { // Changed totalCansOwed to points
                     const justCansLine = document.createElement('div');
                     justCansLine.classList.add('flex', 'items-center', 'justify-center', 'space-x-1');
                      const canIcon = document.createElement('img');
@@ -328,7 +360,7 @@ function renderLeaderboard(leaderboardData) {
                         justCansLine.appendChild(canIcon);
                     const totalCansText = document.createElement('span');
                     totalCansText.classList.add('text-lg', 'font-semibold');
-                    totalCansText.textContent = `x ${person.totalCansOwed}`; // Show total cans if no burgers/displayCans
+                    totalCansText.textContent = `x ${person.points}`; // Show total points if no burgers/displayCans
                     justCansLine.appendChild(totalCansText);
                     iconsDiv.appendChild(justCansLine);
                 }
@@ -379,7 +411,7 @@ function renderLeaderboard(leaderboardData) {
                 iconsDiv.appendChild(burgerCount);
             }
 
-            if (person.displayCansOwed > 0) {
+            if (person.cansOwed > 0) { // Changed from displayCansOwed
                  if (person.burgersOwed > 0) { // Add separator if burgers are also shown
                     const separator = document.createElement('span');
                     separator.textContent = '|';
@@ -393,10 +425,11 @@ function renderLeaderboard(leaderboardData) {
                 iconsDiv.appendChild(canIcon);
                 const canCount = document.createElement('span');
                 canCount.classList.add('text-sm', 'font-medium');
-                canCount.textContent = `x ${person.displayCansOwed}`;
+                canCount.textContent = `x ${person.cansOwed}`; // Changed from displayCansOwed
                 iconsDiv.appendChild(canCount);
             }
-             if (person.burgersOwed === 0 && person.displayCansOwed === 0 && person.totalCansOwed > 0) { // Should not happen
+             // Fallback for list items
+             if (person.burgersOwed === 0 && person.cansOwed === 0 && person.points > 0) { // Changed totalCansOwed to points
                 const canIcon = document.createElement('img');
                 canIcon.src = './cup.svg';
                 canIcon.alt = 'Canette';
@@ -404,7 +437,7 @@ function renderLeaderboard(leaderboardData) {
                 iconsDiv.appendChild(canIcon);
                 const canCount = document.createElement('span');
                 canCount.classList.add('text-sm', 'font-medium');
-                canCount.textContent = `x ${person.totalCansOwed}`;
+                canCount.textContent = `x ${person.points}`; // Changed from totalCansOwed
                 iconsDiv.appendChild(canCount);
             }
 
@@ -443,8 +476,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // The 'active-tab' class from index.html is now mainly a semantic marker for initial state,
         // JS directly controls appearance by swapping all relevant Tailwind classes.
 
-        const netBalances = calculateNetBalances(parsedDebts);
-        const leaderboardData = calculateLeaderboard(netBalances);
+        const totalReceivedMap = calculateTotalReceivedCans(parsedDebts);
+        const leaderboardData = calculateLeaderboard(totalReceivedMap);
         renderLeaderboard(leaderboardData);
     });
 
