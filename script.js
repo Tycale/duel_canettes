@@ -191,11 +191,276 @@ function renderDebts(debts) {
     });
 }
 
+// --- Helper Function for Net Balances ---
+function calculateNetBalances(debts) {
+    const balances = {};
+
+    debts.forEach(debt => {
+        // Debtor owes cans, so their balance decreases
+        balances[debt.debtor] = (balances[debt.debtor] || 0) - debt.cans;
+        // Creditor is owed cans, so their balance increases
+        balances[debt.creditor] = (balances[debt.creditor] || 0) + debt.cans;
+    });
+
+    return balances;
+}
+
+// --- Leaderboard Calculation Function ---
+function calculateLeaderboard(netBalances) {
+    const leaderboard = [];
+
+    for (const name in netBalances) {
+        const balance = netBalances[name];
+        if (balance > 0) { // Only net receivers
+            const { burgers, remainingCans } = calculateBurgersAndCans(balance);
+            leaderboard.push({
+                name: name,
+                totalCansOwed: balance, // Total cans for points and sorting
+                burgersOwed: burgers,   // Burgers for display
+                displayCansOwed: remainingCans, // Remaining cans for display
+                points: balance         // Points for ranking
+            });
+        }
+    }
+
+    // Sort by points (totalCansOwed) in descending order
+    leaderboard.sort((a, b) => b.points - a.points);
+    return leaderboard;
+}
+
+// --- Render Leaderboard Function ---
+function renderLeaderboard(leaderboardData) {
+    const leaderboardContainer = document.getElementById('leaderboard-container');
+    if (!leaderboardContainer) {
+        console.error("Leaderboard container not found!");
+        return;
+    }
+    leaderboardContainer.innerHTML = ''; // Clear previous content
+
+    if (leaderboardData.length === 0) {
+        const emptyMessage = document.createElement('p');
+        emptyMessage.classList.add('text-center', 'text-gray-500', 'italic', 'text-xl', 'py-8');
+        emptyMessage.textContent = '🏆 Aucun classement à afficher pour le moment ! 🏆';
+        leaderboardContainer.appendChild(emptyMessage);
+        return;
+    }
+
+    // Podium (Top 3)
+    const podiumData = leaderboardData.slice(0, 3);
+    const restData = leaderboardData.slice(3);
+
+    if (podiumData.length > 0) {
+        const podiumContainer = document.createElement('div');
+        podiumContainer.classList.add('grid', 'grid-cols-1', 'md:grid-cols-3', 'gap-6', 'mb-10'); // Increased gap and mb
+
+        // Define podium spots data for styling (1st, 2nd, 3rd)
+        const podiumStyles = [
+            { rank: 1, medal: '🥇', color: 'bg-yellow-400', borderColor: 'border-yellow-500', emphasisClass: 'md:scale-110 transform' }, // Gold
+            { rank: 2, medal: '🥈', color: 'bg-gray-300', borderColor: 'border-gray-400' }, // Silver
+            { rank: 3, medal: '🥉', color: 'bg-amber-500', borderColor: 'border-amber-600' }  // Bronze
+        ];
+
+        podiumData.forEach((person, index) => {
+            const style = podiumStyles[index]; // Get style based on actual rank (0=1st, 1=2nd, 2=3rd)
+            if (!style) return; // Should not happen if podiumData.length <= 3
+
+            const spotDiv = document.createElement('div');
+            spotDiv.classList.add(
+                style.color,
+                style.borderColor,
+                'p-6', 'rounded-xl', 'shadow-xl', 'text-center', 'flex', 'flex-col', 'items-center', 'justify-between', 'h-full', 'border-4'
+            );
+            if (style.emphasisClass) {
+                spotDiv.classList.add(...style.emphasisClass.split(' '));
+            }
+
+            const rankText = document.createElement('div');
+            rankText.classList.add('text-3xl', 'font-bold', 'mb-2');
+            rankText.textContent = `${style.medal} #${style.rank}`;
+            spotDiv.appendChild(rankText);
+
+                const nameText = document.createElement('div');
+                nameText.classList.add('text-2xl', 'font-extrabold', 'text-gray-800', 'mb-3', 'truncate', 'w-full');
+                nameText.textContent = person.name;
+                spotDiv.appendChild(nameText);
+
+                const receivesText = document.createElement('div');
+                receivesText.classList.add('text-sm', 'text-gray-700', 'mb-3');
+                receivesText.textContent = 'Reçoit :';
+                spotDiv.appendChild(receivesText);
+
+                const iconsDiv = document.createElement('div');
+                iconsDiv.classList.add('flex', 'flex-col', 'items-center', 'space-y-2'); // Stack burger/can lines
+
+                if (person.burgersOwed > 0) {
+                    const burgerLine = document.createElement('div');
+                    burgerLine.classList.add('flex', 'items-center', 'justify-center', 'space-x-1');
+                    for (let i = 0; i < person.burgersOwed; i++) {
+                        const burgerIcon = document.createElement('img');
+                        burgerIcon.src = './burger.svg';
+                        burgerIcon.alt = 'Burger';
+                        burgerIcon.classList.add('w-8', 'h-8');
+                        burgerLine.appendChild(burgerIcon);
+                    }
+                    iconsDiv.appendChild(burgerLine);
+                }
+
+                if (person.displayCansOwed > 0) {
+                     const canLine = document.createElement('div');
+                    canLine.classList.add('flex', 'items-center', 'justify-center', 'space-x-1');
+                    for (let i = 0; i < person.displayCansOwed; i++) {
+                        const canIcon = document.createElement('img');
+                        canIcon.src = './cup.svg';
+                        canIcon.alt = 'Canette';
+                        canIcon.classList.add('w-7', 'h-7');
+                        canLine.appendChild(canIcon);
+                    }
+                    iconsDiv.appendChild(canLine);
+                }
+                 // This case is unlikely if balance > 0 and burgers/cans are calculated, but as a fallback:
+                 if (person.burgersOwed === 0 && person.displayCansOwed === 0 && person.totalCansOwed > 0) {
+                    const justCansLine = document.createElement('div');
+                    justCansLine.classList.add('flex', 'items-center', 'justify-center', 'space-x-1');
+                     const canIcon = document.createElement('img');
+                        canIcon.src = './cup.svg';
+                        canIcon.alt = 'Canette';
+                        canIcon.classList.add('w-7', 'h-7');
+                        justCansLine.appendChild(canIcon);
+                    const totalCansText = document.createElement('span');
+                    totalCansText.classList.add('text-lg', 'font-semibold');
+                    totalCansText.textContent = `x ${person.totalCansOwed}`; // Show total cans if no burgers/displayCans
+                    justCansLine.appendChild(totalCansText);
+                    iconsDiv.appendChild(justCansLine);
+                }
+                spotDiv.appendChild(iconsDiv);
+                podiumContainer.appendChild(spotDiv); // Append directly in order
+            });
+        leaderboardContainer.appendChild(podiumContainer);
+    }
+
+
+    // List (4th onwards)
+    if (restData.length > 0) {
+        const listContainer = document.createElement('div');
+        listContainer.classList.add('space-y-3'); // Add space between list items
+
+        restData.forEach((person, index) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.classList.add(
+                'flex', 'justify-between', 'items-center', 'p-4', 
+                'bg-white', 'rounded-lg', 'shadow-md', 'hover:shadow-lg', 'transition-shadow'
+            );
+
+            const rankAndNameDiv = document.createElement('div');
+            rankAndNameDiv.classList.add('flex', 'items-center');
+
+            const rankText = document.createElement('span');
+            rankText.classList.add('text-gray-500', 'font-semibold', 'mr-4', 'text-lg', 'w-8'); // Fixed width for rank
+            rankText.textContent = `#${index + 4}`;
+            rankAndNameDiv.appendChild(rankText);
+
+            const nameText = document.createElement('span');
+            nameText.classList.add('text-gray-800', 'font-semibold', 'text-lg');
+            nameText.textContent = person.name;
+            rankAndNameDiv.appendChild(nameText);
+
+            const iconsDiv = document.createElement('div');
+            iconsDiv.classList.add('flex', 'items-center', 'space-x-2');
+
+            if (person.burgersOwed > 0) {
+                const burgerIcon = document.createElement('img');
+                burgerIcon.src = './burger.svg';
+                burgerIcon.alt = 'Burger';
+                burgerIcon.classList.add('w-6', 'h-6');
+                iconsDiv.appendChild(burgerIcon);
+                const burgerCount = document.createElement('span');
+                burgerCount.classList.add('text-sm', 'font-medium');
+                burgerCount.textContent = `x ${person.burgersOwed}`;
+                iconsDiv.appendChild(burgerCount);
+            }
+
+            if (person.displayCansOwed > 0) {
+                 if (person.burgersOwed > 0) { // Add separator if burgers are also shown
+                    const separator = document.createElement('span');
+                    separator.textContent = '|';
+                    separator.classList.add('text-gray-300', 'mx-1');
+                    iconsDiv.appendChild(separator);
+                }
+                const canIcon = document.createElement('img');
+                canIcon.src = './cup.svg';
+                canIcon.alt = 'Canette';
+                canIcon.classList.add('w-5', 'h-5');
+                iconsDiv.appendChild(canIcon);
+                const canCount = document.createElement('span');
+                canCount.classList.add('text-sm', 'font-medium');
+                canCount.textContent = `x ${person.displayCansOwed}`;
+                iconsDiv.appendChild(canCount);
+            }
+             if (person.burgersOwed === 0 && person.displayCansOwed === 0 && person.totalCansOwed > 0) { // Should not happen
+                const canIcon = document.createElement('img');
+                canIcon.src = './cup.svg';
+                canIcon.alt = 'Canette';
+                canIcon.classList.add('w-5', 'h-5');
+                iconsDiv.appendChild(canIcon);
+                const canCount = document.createElement('span');
+                canCount.classList.add('text-sm', 'font-medium');
+                canCount.textContent = `x ${person.totalCansOwed}`;
+                iconsDiv.appendChild(canCount);
+            }
+
+
+            itemDiv.appendChild(rankAndNameDiv);
+            itemDiv.appendChild(iconsDiv);
+            listContainer.appendChild(itemDiv);
+        });
+        leaderboardContainer.appendChild(listContainer);
+    }
+}
+
+
 // --- Main Execution ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Debts rendering logic
+    const viewVentilationBtn = document.getElementById('view-ventilation-btn');
+    const viewLeaderboardBtn = document.getElementById('view-leaderboard-btn');
+    const debtsContainer = document.getElementById('debts-container');
+    const leaderboardContainer = document.getElementById('leaderboard-container');
+
+    // Initial state: Ventilation view is active
     const parsedDebts = parseDebtData(debtsData);
     renderDebts(parsedDebts);
+    // leaderboardContainer.classList.add('hidden'); // Already hidden by HTML
+
+    viewLeaderboardBtn.addEventListener('click', () => {
+        debtsContainer.classList.add('hidden');
+        leaderboardContainer.classList.remove('hidden');
+
+        // Set active styles for Leaderboard button, inactive for Ventilation button
+        viewLeaderboardBtn.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+        viewLeaderboardBtn.classList.add('bg-sky-500', 'text-white', 'hover:bg-sky-600', 'active-tab');
+        
+        viewVentilationBtn.classList.remove('bg-sky-500', 'text-white', 'hover:bg-sky-600', 'active-tab');
+        viewVentilationBtn.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+        // The 'active-tab' class from index.html is now mainly a semantic marker for initial state,
+        // JS directly controls appearance by swapping all relevant Tailwind classes.
+
+        const netBalances = calculateNetBalances(parsedDebts);
+        const leaderboardData = calculateLeaderboard(netBalances);
+        renderLeaderboard(leaderboardData);
+    });
+
+    viewVentilationBtn.addEventListener('click', () => {
+        leaderboardContainer.classList.add('hidden');
+        debtsContainer.classList.remove('hidden');
+
+        // Set active styles for Ventilation button, inactive for Leaderboard button
+        viewVentilationBtn.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+        viewVentilationBtn.classList.add('bg-sky-500', 'text-white', 'hover:bg-sky-600', 'active-tab');
+
+        viewLeaderboardBtn.classList.remove('bg-sky-500', 'text-white', 'hover:bg-sky-600', 'active-tab');
+        viewLeaderboardBtn.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+        
+        // Data for ventilation view is already loaded, no need to re-render unless data changes.
+    });
 
     // --- Falling Items Animation ---
     const fallingObjectsContainer = document.getElementById('falling-objects-container');
