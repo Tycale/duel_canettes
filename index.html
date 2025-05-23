@@ -20,7 +20,7 @@
 </head>
 <body class="text-gray-800 flex flex-col justify-center items-center min-h-screen p-6">
     <div id="falling-objects-container"></div>
-    <h1 class="text-5xl font-extrabold mb-8 text-center bg-gradient-to-r from-yellow-600 to-orange-500 text-transparent bg-clip-text drop-shadow-lg">
+    <h1 class="text-5xl font-extrabold mb-8 text-center bg-gradient-to-r from-sky-400 to-cyan-300 text-transparent bg-clip-text drop-shadow-lg">
         Compteur de Canettes
     </h1>
 
@@ -34,8 +34,21 @@
         </span>
     </div>
 
+    <div class="flex justify-center space-x-4 my-8">
+        <button id="view-ventilation-btn" class="px-6 py-2 text-lg font-semibold rounded-lg shadow focus:outline-none transition-all duration-150 ease-in-out bg-sky-500 text-white hover:bg-sky-600 view-tab-button active-tab">
+            Ventilation
+        </button>
+        <button id="view-leaderboard-btn" class="px-6 py-2 text-lg font-semibold rounded-lg shadow focus:outline-none transition-all duration-150 ease-in-out bg-gray-200 text-gray-700 hover:bg-gray-300 view-tab-button">
+            Leaderboard
+        </button>
+    </div>
+
     <div id="debts-container" class="space-y-7 w-full max-w-3xl">
         <!-- Debt entries will be loaded here by JavaScript -->
+    </div>
+
+    <div id="leaderboard-container" class="space-y-7 w-full max-w-3xl hidden">
+        <!-- Leaderboard content will be added by JavaScript -->
     </div>
 
     <script src="script.js"></script>
