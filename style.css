@@ -1,0 +1,25 @@
+/* Add your styles here */
+body {
+    background-image: linear-gradient(to right top, #051937, #004d7a, #008793, #00bf72, #a8eb12);
+    /* Ensure min-height and flex properties are maintained if they were previously on the body.
+       These are usually handled by Tailwind classes on the body tag itself.
+       If Tailwind's `min-h-screen` is on the body, this CSS `min-height` might be redundant
+       but is kept here for explicitness as per instructions. */
+    min-height: 100vh;
+}
+
+#falling-objects-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1; /* Place it behind other content */
+    overflow: hidden; /* Prevent scrollbars from items */
+}
+
+img.falling-item {
+    position: absolute;
+    opacity: 0.7;
+    pointer-events: none; /* So they don't block interactions with content */
+}
