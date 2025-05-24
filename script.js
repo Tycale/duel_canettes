@@ -57,6 +57,38 @@ function calculateBurgersAndCans(totalCans) {
     return { burgers, remainingCans };
 }
 
+function createItemDisplay(container, iconSrc, altText, count, iconClasses = 'w-6 h-6', textClasses = 'text-sm font-medium') {
+    if (count <= 0) return;
+    
+    if (count <= 5) {
+        // Repeat icons for count <= 5
+        for (let i = 0; i < count; i++) {
+            const icon = document.createElement('img');
+            icon.src = iconSrc;
+            icon.alt = altText;
+            icon.classList.add(...iconClasses.split(' '));
+            container.appendChild(icon);
+        }
+    } else {
+        // Use "x N" format for count > 5
+        const itemContainer = document.createElement('div');
+        itemContainer.classList.add('flex', 'items-center', 'space-x-2');
+        
+        const icon = document.createElement('img');
+        icon.src = iconSrc;
+        icon.alt = altText;
+        icon.classList.add(...iconClasses.split(' '));
+        
+        const countSpan = document.createElement('span');
+        countSpan.classList.add(...textClasses.split(' '));
+        countSpan.textContent = `x ${count}`;
+        
+        itemContainer.appendChild(icon);
+        itemContainer.appendChild(countSpan);
+        container.appendChild(itemContainer);
+    }
+}
+
 function createDebtElement(debt) {
     const { burgers, remainingCans } = calculateBurgersAndCans(debt.cans);
 
@@ -142,21 +174,8 @@ function createDebtElement(debt) {
         noDebtText.textContent = "Rien !";
         creditorIconsDiv.appendChild(noDebtText);
     } else {
-        for (let i = 0; i < burgers; i++) {
-            const burgerIcon = document.createElement('img');
-            burgerIcon.src = './burger.svg';
-            burgerIcon.alt = 'Burger';
-            burgerIcon.classList.add('w-7', 'h-7', 'text-yellow-600'); 
-            creditorIconsDiv.appendChild(burgerIcon);
-        }
-
-        for (let i = 0; i < remainingCans; i++) {
-            const canIcon = document.createElement('img');
-            canIcon.src = './cup.svg';
-            canIcon.alt = 'Canette';
-            canIcon.classList.add('w-6', 'h-6', 'text-gray-500'); 
-            creditorIconsDiv.appendChild(canIcon);
-        }
+        createItemDisplay(creditorIconsDiv, './burger.svg', 'Burger', burgers, 'w-7 h-7 text-yellow-600', 'text-sm font-medium');
+        createItemDisplay(creditorIconsDiv, './cup.svg', 'Canette', remainingCans, 'w-6 h-6 text-gray-500', 'text-sm font-medium');
     }
 
     creditorDiv.appendChild(creditorName);
@@ -292,62 +311,14 @@ function renderLeaderboard(leaderboardData) {
                 if (person.burgersOwed > 0) {
                     const burgerLine = document.createElement('div');
                     burgerLine.classList.add('flex', 'items-center', 'justify-center', 'space-x-1');
-                    for (let i = 0; i < person.burgersOwed; i++) {
-                        const burgerIcon = document.createElement('img');
-                        burgerIcon.src = './burger.svg';
-                        burgerIcon.alt = 'Burger';
-                        burgerIcon.classList.add('w-8', 'h-8');
-                        burgerLine.appendChild(burgerIcon);
-                    }
+                    createItemDisplay(burgerLine, './burger.svg', 'Burger', person.burgersOwed, 'w-8 h-8', 'text-lg font-semibold');
                     iconsDiv.appendChild(burgerLine);
                 }
 
-                if (person.displayCansOwed > 0) {
-                     const canLine = document.createElement('div');
+                if (person.cansOwed > 0) {
+                    const canLine = document.createElement('div');
                     canLine.classList.add('flex', 'items-center', 'justify-center', 'space-x-1');
-                    for (let i = 0; i < person.displayCansOwed; i++) {
-                        const canIcon = document.createElement('img');
-                        canIcon.src = './cup.svg';
-                        canIcon.alt = 'Canette';
-                        canIcon.classList.add('w-7', 'h-7');
-                        canLine.appendChild(canIcon);
-                    }
-                    iconsDiv.appendChild(canLine);
-                }
-                 // This case is unlikely if balance > 0 and burgers/cans are calculated, but as a fallback:
-                // The `person` object from calculateLeaderboard now has:
-                // name, points (total received), burgersOwed, cansOwed (remaining)
-                // renderLeaderboard expects `person.burgersOwed` and `person.cansOwed` for display.
-                // It also expects `person.totalCansOwed` for a fallback display if both burgersOwed and displayCansOwed are 0
-                // but points is > 0. Let's ensure this case is handled or if the field name needs aligning.
-                // The `renderLeaderboard` function uses `person.totalCansOwed` in one specific fallback.
-                // Since `points` now holds the total, we should use that in the fallback logic.
-                // For now, let's assume `renderLeaderboard` will be updated or this fallback is not critical.
-                // The primary display logic for burgers and cans uses `burgersOwed` and `displayCansOwed` (which is now `cansOwed`).
-
-                if (person.burgersOwed > 0) {
-                    const burgerLine = document.createElement('div');
-                    burgerLine.classList.add('flex', 'items-center', 'justify-center', 'space-x-1');
-                    for (let i = 0; i < person.burgersOwed; i++) {
-                        const burgerIcon = document.createElement('img');
-                        burgerIcon.src = './burger.svg';
-                        burgerIcon.alt = 'Burger';
-                        burgerIcon.classList.add('w-8', 'h-8');
-                        burgerLine.appendChild(burgerIcon);
-                    }
-                    iconsDiv.appendChild(burgerLine);
-                }
-
-                if (person.cansOwed > 0) { // Changed from displayCansOwed
-                     const canLine = document.createElement('div');
-                    canLine.classList.add('flex', 'items-center', 'justify-center', 'space-x-1');
-                    for (let i = 0; i < person.cansOwed; i++) { // Changed from displayCansOwed
-                        const canIcon = document.createElement('img');
-                        canIcon.src = './cup.svg';
-                        canIcon.alt = 'Canette';
-                        canIcon.classList.add('w-7', 'h-7');
-                        canLine.appendChild(canIcon);
-                    }
+                    createItemDisplay(canLine, './cup.svg', 'Canette', person.cansOwed, 'w-7 h-7', 'text-lg font-semibold');
                     iconsDiv.appendChild(canLine);
                 }
                  // This case is unlikely if points > 0 and burgers/cans are calculated, but as a fallback:
@@ -401,45 +372,21 @@ function renderLeaderboard(leaderboardData) {
             iconsDiv.classList.add('flex', 'items-center', 'space-x-2');
 
             if (person.burgersOwed > 0) {
-                const burgerIcon = document.createElement('img');
-                burgerIcon.src = './burger.svg';
-                burgerIcon.alt = 'Burger';
-                burgerIcon.classList.add('w-6', 'h-6');
-                iconsDiv.appendChild(burgerIcon);
-                const burgerCount = document.createElement('span');
-                burgerCount.classList.add('text-sm', 'font-medium');
-                burgerCount.textContent = `x ${person.burgersOwed}`;
-                iconsDiv.appendChild(burgerCount);
+                createItemDisplay(iconsDiv, './burger.svg', 'Burger', person.burgersOwed, 'w-6 h-6', 'text-sm font-medium');
             }
 
-            if (person.cansOwed > 0) { // Changed from displayCansOwed
-                 if (person.burgersOwed > 0) { // Add separator if burgers are also shown
+            if (person.cansOwed > 0) {
+                if (person.burgersOwed > 0) { // Add separator if burgers are also shown
                     const separator = document.createElement('span');
                     separator.textContent = '|';
                     separator.classList.add('text-gray-300', 'mx-1');
                     iconsDiv.appendChild(separator);
                 }
-                const canIcon = document.createElement('img');
-                canIcon.src = './cup.svg';
-                canIcon.alt = 'Canette';
-                canIcon.classList.add('w-5', 'h-5');
-                iconsDiv.appendChild(canIcon);
-                const canCount = document.createElement('span');
-                canCount.classList.add('text-sm', 'font-medium');
-                canCount.textContent = `x ${person.cansOwed}`; // Changed from displayCansOwed
-                iconsDiv.appendChild(canCount);
+                createItemDisplay(iconsDiv, './cup.svg', 'Canette', person.cansOwed, 'w-5 h-5', 'text-sm font-medium');
             }
              // Fallback for list items
-             if (person.burgersOwed === 0 && person.cansOwed === 0 && person.points > 0) { // Changed totalCansOwed to points
-                const canIcon = document.createElement('img');
-                canIcon.src = './cup.svg';
-                canIcon.alt = 'Canette';
-                canIcon.classList.add('w-5', 'h-5');
-                iconsDiv.appendChild(canIcon);
-                const canCount = document.createElement('span');
-                canCount.classList.add('text-sm', 'font-medium');
-                canCount.textContent = `x ${person.points}`; // Changed from totalCansOwed
-                iconsDiv.appendChild(canCount);
+             if (person.burgersOwed === 0 && person.cansOwed === 0 && person.points > 0) {
+                createItemDisplay(iconsDiv, './cup.svg', 'Canette', person.points, 'w-5 h-5', 'text-sm font-medium');
             }
 
 
@@ -535,66 +482,4 @@ document.addEventListener('DOMContentLoaded', () => {
         // Data for ventilation view is already loaded, no need to re-render unless data changes.
     });
 
-    // --- Falling Items Animation ---
-    const fallingObjectsContainer = document.getElementById('falling-objects-container');
-    const itemSources = ['./cup.svg', './burger.svg'];
-
-    function createFallingItem() {
-        if (!fallingObjectsContainer) return;
-
-        const randomImagePath = itemSources[Math.floor(Math.random() * itemSources.length)];
-        const img = document.createElement('img');
-        img.classList.add('falling-item');
-        img.src = randomImagePath;
-
-        img.style.left = Math.random() * window.innerWidth + 'px';
-        img.style.top = '-60px'; // Start above the viewport
-
-        const randomSize = Math.random() * 30 + 30; // Size between 30px and 60px
-        img.style.width = randomSize + 'px';
-        img.style.height = 'auto'; // Maintain aspect ratio
-
-        fallingObjectsContainer.appendChild(img);
-    }
-
-    let lastTimestamp = 0;
-    function animationLoop(timestamp) {
-        if (!fallingObjectsContainer) {
-            requestAnimationFrame(animationLoop); // Keep trying if container not found yet
-            return;
-        }
-
-        // Calculate time elapsed since last frame
-        const deltaTime = timestamp - lastTimestamp;
-        lastTimestamp = timestamp;
-        
-        // Skip first frame to avoid huge deltaTime
-        if (deltaTime > 100) {
-            requestAnimationFrame(animationLoop);
-            return;
-        }
-
-        const items = fallingObjectsContainer.querySelectorAll('.falling-item');
-        items.forEach(item => {
-            let currentTop = parseFloat(item.style.top);
-            // Speed: 120 pixels per second (2px at 60fps)
-            let newTop = currentTop + (120 * deltaTime / 1000);
-
-            if (newTop > window.innerHeight) {
-                item.remove();
-            } else {
-                item.style.top = newTop + 'px';
-            }
-        });
-
-        requestAnimationFrame(animationLoop);
-    }
-
-    // Initialize animation
-    if (fallingObjectsContainer) { // Only start if container exists
-        setInterval(createFallingItem, 700); // Create a new item every 700ms
-        animationLoop(); // Start the animation loop
-    } else {
-        console.warn("Falling objects container not found, animation not started.");
-    }
 });
