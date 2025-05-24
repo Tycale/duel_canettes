@@ -517,16 +517,28 @@ document.addEventListener('DOMContentLoaded', () => {
         fallingObjectsContainer.appendChild(img);
     }
 
-    function animationLoop() {
+    let lastTimestamp = 0;
+    function animationLoop(timestamp) {
         if (!fallingObjectsContainer) {
             requestAnimationFrame(animationLoop); // Keep trying if container not found yet
+            return;
+        }
+
+        // Calculate time elapsed since last frame
+        const deltaTime = timestamp - lastTimestamp;
+        lastTimestamp = timestamp;
+        
+        // Skip first frame to avoid huge deltaTime
+        if (deltaTime > 100) {
+            requestAnimationFrame(animationLoop);
             return;
         }
 
         const items = fallingObjectsContainer.querySelectorAll('.falling-item');
         items.forEach(item => {
             let currentTop = parseFloat(item.style.top);
-            let newTop = currentTop + 2; // Speed of falling
+            // Speed: 120 pixels per second (2px at 60fps)
+            let newTop = currentTop + (120 * deltaTime / 1000);
 
             if (newTop > window.innerHeight) {
                 item.remove();
