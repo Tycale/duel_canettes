@@ -20,19 +20,16 @@
 </head>
 <body class="text-gray-800 flex flex-col justify-center items-center min-h-screen p-6">
     <div id="falling-objects-container"></div>
-    <h1 class="text-5xl font-extrabold mb-8 text-center bg-gradient-to-r from-sky-400 to-cyan-300 text-transparent bg-clip-text drop-shadow-lg">
-        Compteur de Canettes
-    </h1>
-
-    <div class="text-center text-lg font-semibold text-gray-700 mb-10 p-4 bg-yellow-100 border border-yellow-300 rounded-lg shadow max-w-md">
-        Règle du jeu : <br class="sm:hidden">
-        <span class="font-bold text-yellow-700">
-            10 Canettes
-            <img src="./cup.svg" alt="Canette" class="inline w-5 h-5 mx-1 relative -top-0.5">
-            = 1 Burger
-            <img src="./burger.svg" alt="Burger" class="inline w-6 h-6 mx-1 relative -top-0.5">
-        </span>
+    <div class="flex items-center justify-center mb-8">
+        <h1 class="text-5xl font-extrabold text-center bg-gradient-to-r from-sky-400 to-cyan-300 text-transparent bg-clip-text drop-shadow-lg">
+            Compteur de Canettes
+        </h1>
+        <button id="help-btn" class="ml-4 w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 ease-in-out flex items-center justify-center text-xl font-bold relative overflow-hidden group">
+            <span class="relative z-10">?</span>
+            <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        </button>
     </div>
+
 
     <div class="flex justify-center space-x-4 my-8">
         <button id="view-ventilation-btn" class="px-6 py-2 text-lg font-semibold rounded-lg shadow focus:outline-none transition-all duration-150 ease-in-out bg-sky-500 text-white hover:bg-sky-600 view-tab-button active-tab">
@@ -49,6 +46,74 @@
 
     <div id="leaderboard-container" class="space-y-7 w-full max-w-3xl hidden">
         <!-- Leaderboard content will be added by JavaScript -->
+    </div>
+
+    <!-- Popup d'aide -->
+    <div id="help-popup" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto transform scale-0 transition-all duration-500 ease-out" id="help-content">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                        <img src="./cup.svg" alt="Canette" class="w-6 h-6 mr-2">
+                        À quoi ça sert ?
+                        <span class="ml-2">🎮</span>
+                    </h2>
+                    <button id="close-help" class="text-gray-500 hover:text-gray-700 text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+                        ×
+                    </button>
+                </div>
+                
+                <div class="space-y-4 text-gray-700">
+                    <p class="text-lg leading-relaxed">
+                        Bienvenue dans l'univers impitoyable des <strong class="text-orange-600">paris de cannettes</strong> ! <img src="./burger.svg" alt="Burger" class="inline w-6 h-6 mx-1 relative -top-0.5">
+                    </p>
+                    <p class="leading-relaxed">
+                        Ce site ultra-sophistiqué sert à maintenir les décomptes entre parieurs lors de parties de <strong class="text-blue-600">Counter-Strike 2</strong>. Parce que oui, on prend ça au sérieux ici ! 😎
+                    </p>
+                    
+                    <div class="text-center text-lg font-semibold text-gray-700 my-6 p-4 bg-yellow-100 border border-yellow-300 rounded-lg shadow">
+                        <div class="mb-2">Règle du jeu :</div>
+                        <div class="font-bold text-yellow-700 flex items-center justify-center">
+                            10 Canettes
+                            <img src="./cup.svg" alt="Canette" class="inline w-5 h-5 mx-2">
+                            = 1 Burger
+                            <img src="./burger.svg" alt="Burger" class="inline w-6 h-6 mx-2">
+                        </div>
+                        <div class="text-sm text-gray-600 italic mt-2">
+                            (burger / burrito / ... à définir au bon vouloir du donnant)
+                        </div>
+                    </div>
+                    
+                    <h3 class="text-xl font-bold text-gray-800 mt-6 mb-4 flex items-center">
+                        <span class="mr-2">📜</span>
+                        Règles du jeu
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
+                            <span class="text-blue-600 font-bold">1.</span>
+                            <p><strong>Définition des défis :</strong> On ne peut parier que des cannettes, mais le défi peut être défini en début de partie (damages, kills, knife kill, etc.).</p>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3 p-3 bg-red-50 rounded-lg">
+                            <span class="text-red-600 font-bold">2.</span>
+                            <p><strong>Pas de simplification :</strong> Si deux personnes se doivent respectivement des cannettes, on ne peut PAS faire la différence. Toute cannette pariée doit être due !</p>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3 p-3 bg-green-50 rounded-lg">
+                            <span class="text-green-600 font-bold">3.</span>
+                            <p><strong>Transfert autorisé :</strong> Si X doit une cannette à Y qui en doit une à Z, Y peut donner la cannette reçue de X à Z pour se défaire de son obligation.</p>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3 p-3 bg-orange-50 rounded-lg">
+                            <span class="text-orange-600 font-bold">4.</span>
+                            <p><strong>Team kill = défaite automatique :</strong> Un team kill volontaire dans le but de nuire au bon déroulement du défi entraîne que le fauteur est automatiquement considéré comme perdant.</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>

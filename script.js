@@ -458,6 +458,45 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewLeaderboardBtn = document.getElementById('view-leaderboard-btn');
     const debtsContainer = document.getElementById('debts-container');
     const leaderboardContainer = document.getElementById('leaderboard-container');
+    
+    // --- Help Popup Logic ---
+    const helpBtn = document.getElementById('help-btn');
+    const helpPopup = document.getElementById('help-popup');
+    const helpContent = document.getElementById('help-content');
+    const closeHelpBtn = document.getElementById('close-help');
+    
+    function openHelpPopup() {
+        helpPopup.classList.remove('hidden');
+        // Force reflow before starting animation
+        helpPopup.offsetHeight;
+        helpContent.classList.remove('scale-0');
+        helpContent.classList.add('scale-100');
+    }
+    
+    function closeHelpPopup() {
+        helpContent.classList.remove('scale-100');
+        helpContent.classList.add('scale-0');
+        setTimeout(() => {
+            helpPopup.classList.add('hidden');
+        }, 500); // Match the transition duration
+    }
+    
+    helpBtn.addEventListener('click', openHelpPopup);
+    closeHelpBtn.addEventListener('click', closeHelpPopup);
+    
+    // Close popup when clicking outside
+    helpPopup.addEventListener('click', (e) => {
+        if (e.target === helpPopup) {
+            closeHelpPopup();
+        }
+    });
+    
+    // Close popup with Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !helpPopup.classList.contains('hidden')) {
+            closeHelpPopup();
+        }
+    });
 
     // Initial state: Ventilation view is active
     const parsedDebts = parseDebtData(debtsData);
