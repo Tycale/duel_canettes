@@ -1,5 +1,5 @@
 const debtsData = `
-Stéphane - Thibault : 2 canettes
+Stéphane - Thibault : 3 canettes
 Thibault - Stéphane : 2 canettes
 François - Thibault : 3 canettes
 Guillaume - Thibault : 1 canettes
