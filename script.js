@@ -4,7 +4,7 @@ Thibault - Stéphane : 2 canettes
 François - Thibault : 3 canettes
 Guillaume - Thibault : 1 canettes
 Guillaume - François : 1 canettes
-Thibault - Eneway : 2 canettes
+Thibault - Eneway : 3 canettes
 `;
 // --- End Embedded Data ---
 
