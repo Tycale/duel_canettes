@@ -2,8 +2,8 @@ const debtsData = `
 Stéphane - Thibault : 3 canettes
 Thibault - Stéphane : 2 canettes
 François - Thibault : 3 canettes
-Guillaume - Thibault : 1 canettes
-Guillaume - François : 1 canettes
+Guillaume - Thibault : 0 canettes
+Guillaume - François : 0 canettes
 Thibault - Eneway : 2 canettes
 `;
 // --- End Embedded Data ---
